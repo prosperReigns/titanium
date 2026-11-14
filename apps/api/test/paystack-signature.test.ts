@@ -1,0 +1,6 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {createHmac} from 'node:crypto';import {verifyLegacyPaystackSignature,verifyModernPaystackSignature} from '../src/payments/paystack-signature.js';
+const secret='test-secret-key';const raw=Buffer.from('{"event":"charge.success","data":{"amount":12345}}');
+test('accepts a valid legacy Paystack HMAC signature',()=>{const sig=createHmac('sha512',secret).update(raw).digest('hex');assert.equal(verifyLegacyPaystackSignature(raw,secret,sig),true);});
+test('rejects an invalid or malformed legacy signature',()=>{assert.equal(verifyLegacyPaystackSignature(raw,secret,'invalid'),false);assert.equal(verifyLegacyPaystackSignature(raw,secret,'a'.repeat(128)),false);});
+test('accepts a valid timestamped Paystack signature',()=>{const now=Date.now();const t=String(Math.floor(now/1000));const sig=createHmac('sha512',secret).update(t+'.').update(raw).digest('hex');assert.equal(verifyModernPaystackSignature(raw,secret,`t=${t},v1=whk_test:${sig}`,now),true);});
+test('rejects stale timestamped Paystack signatures',()=>{const now=Date.now();const t=String(Math.floor(now/1000)-600);const sig=createHmac('sha512',secret).update(t+'.').update(raw).digest('hex');assert.equal(verifyModernPaystackSignature(raw,secret,`t=${t},v1=whk_test:${sig}`,now),false);});
