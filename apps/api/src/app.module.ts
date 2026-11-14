@@ -1,5 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { CatalogModule } from './catalog/catalog.module';
 import { HealthModule } from './health/health.module';
-@Module({ imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: ['apps/api/.env', '.env'] }), HealthModule] })
+import { PrismaModule } from './prisma/prisma.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['apps/api/.env', '.env'] }),
+    PrismaModule,
+    HealthModule,
+    CatalogModule,
+  ],
+})
 export class AppModule {}
