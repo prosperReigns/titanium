@@ -5,7 +5,7 @@ services:
     plan: starter
     region: frankfurt
     branch: feature/complete-commerce
-    buildCommand: corepack enable && pnpm install --no-frozen-lockfile && pnpm --filter @titanium/api db:generate && pnpm build
+    buildCommand: corepack enable && pnpm install --no-frozen-lockfile --prod=false && pnpm --filter @titanium/api db:generate && pnpm build
     startCommand: pnpm --filter @titanium/api db:deploy && pnpm --filter @titanium/api db:seed && pnpm --filter @titanium/api start:prod
     healthCheckPath: /api/health
     envVars:
