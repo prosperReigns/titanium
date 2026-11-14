@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: titanium-5-store
+    runtime: node
+    plan: starter
+    region: frankfurt
+    branch: feature/complete-commerce
+    buildCommand: corepack enable && pnpm install --no-frozen-lockfile && pnpm --filter @titanium/api db:generate && pnpm build
+    startCommand: pnpm --filter @titanium/api db:deploy && pnpm --filter @titanium/api db:seed && pnpm --filter @titanium/api start:prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.15.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: titanium-postgres
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: WEB_ORIGIN
+        value: https://titanium-5-store.onrender.com
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: PAYSTACK_CALLBACK_URL
+        value: https://titanium-5-store.onrender.com/checkout/verify
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        value: admin@titanium5.test
+      - key: ADMIN_PASSWORD
+        sync: false
+databases:
+  - name: titanium-postgres
+    plan: basic-256mb
+    databaseName: titanium
+    user: titanium
+    region: frankfurt

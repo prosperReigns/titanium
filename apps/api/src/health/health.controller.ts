@@ -1,6 +1,1 @@
-import { Controller, Get } from '@nestjs/common';
-@Controller('health')
-export class HealthController {
-  @Get()
-  check() { return { status: 'ok', service: 'titanium-api', timestamp: new Date().toISOString() }; }
-}
+import {Controller,Get} from '@nestjs/common';import {PrismaService} from '../prisma/prisma.service.js';@Controller('health')export class HealthController{constructor(private prisma:PrismaService){}@Get()async check(){await this.prisma.$queryRaw`SELECT 1`;return{status:'ok',service:'titanium-api',database:'connected',timestamp:new Date().toISOString()};}}

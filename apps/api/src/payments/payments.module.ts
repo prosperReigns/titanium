@@ -1,0 +1,1 @@
+import {Module} from '@nestjs/common';import {PaymentsController} from './payments.controller.js';import {PaystackService} from './paystack.service.js';@Module({controllers:[PaymentsController],providers:[PaystackService],exports:[PaystackService]})export class PaymentsModule{}

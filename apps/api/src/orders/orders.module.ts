@@ -1,0 +1,1 @@
+import {Module} from '@nestjs/common';import {OrdersController} from './orders.controller.js';import {OrdersService} from './orders.service.js';import {ReservationService} from './reservation.service.js';@Module({controllers:[OrdersController],providers:[OrdersService,ReservationService]})export class OrdersModule{}

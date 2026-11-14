@@ -1,13 +1,1 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { CatalogService } from './catalog.service';
-
-@Controller('catalog')
-export class CatalogController {
-  constructor(private readonly catalog: CatalogService) {}
-
-  @Get('products')
-  products(@Query('category') category?: string) { return this.catalog.findAll(category); }
-
-  @Get('categories')
-  categories() { return this.catalog.findCategories(); }
-}
+import {Controller,Get,Param,Query} from '@nestjs/common';import {CatalogService} from './catalog.service.js';@Controller('catalog')export class CatalogController{constructor(private catalog:CatalogService){}@Get('products')products(@Query('category')c?:string,@Query('q')q?:string){return this.catalog.findAll(c,q);}@Get('categories')categories(){return this.catalog.findCategories();}@Get('products/:slug')product(@Param('slug')s:string){return this.catalog.findOne(s);}}
