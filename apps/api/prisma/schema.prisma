@@ -7,9 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ProductStatus { DRAFT ACTIVE ARCHIVED }
-enum OrderStatus { PENDING_PAYMENT PAID PROCESSING SHIPPED DELIVERED CANCELLED REFUNDED }
-enum PaymentStatus { INITIATED SUCCESS FAILED ABANDONED REFUNDED }
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+  ABANDONED
+  REFUNDED
+}
 
 model Category {
   id          String   @id @default(cuid())
@@ -64,6 +84,7 @@ model ProductVariant {
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
   @@index([productId])
 }
 
@@ -96,6 +117,7 @@ model Order {
   payment         Payment?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+
   @@index([customerId, createdAt])
   @@index([status, createdAt])
 }
