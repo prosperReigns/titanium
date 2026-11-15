@@ -10,7 +10,45 @@ const token=()=>localStorage.getItem('t5-admin-token')??'';
 async function api(path:string,options:RequestInit={}){const response=await fetch('/api'+path,{...options,headers:{'Content-Type':'application/json',...(options.headers??{})}});const data=await response.json().catch(()=>({message:'Unexpected server response'}));if(!response.ok)throw new Error(data.message??'Request failed');return data;}
 function Brand(){return <a className="brand" href="/" aria-label="Titanium 5 Collections home"><span className="brand-mark">T<span>5</span></span><span className="brand-name">TITANIUM 5<small>COLLECTIONS</small></span></a>}
 export default function App(){
- const [products,setProducts]=useState<Product[]>(demo),[active,setActive]=useState('All pieces'),[query,setQuery]=useState(''),[cart,setCart]=useState<CartLine[]>([]),[menu,setMenu]=useState(false),[liked,setLiked]=useState<string[]>([]),[cartOpen,setCartOpen]=useState(false),[checkout,setCheckout]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[admin,setAdmin]=useState(window.location.pathname==='/admin'),[account,setAccount]=useState(window.location.pathname==='/account'),[customerToken,setCustomerToken]=useState(localStorage.getItem('t5-customer-token')??''),[customerMode,setCustomerMode]=useState<'login'|'register'>('login'),[customerForm,setCustomerForm]=useState({email:'',password:'',firstName:'',lastName:'',phone:''}),[adminToken,setAdminToken]=useState(token()),[adminEmail,setAdminEmail]=useState(''),[adminPassword,setAdminPassword]=useState(''),[adminData,setAdminData]=useState<any>(null),[orders,setOrders]=useState<any[]>([]),[adminProducts,setAdminProducts]=useState<any[]>([]),[adminCategories,setAdminCategories]=useState<any[]>([]),[productDraft,setProductDraft]=useState({name:'',slug:'',description:'',categoryId:'',priceNaira:'',stock:'',imageUrl:''});
+ const [products, setProducts] = useState<Product[]>(demo),
+   [active, setActive] = useState("All pieces"),
+   [query, setQuery] = useState(""),
+   [cart, setCart] = useState<CartLine[]>([]),
+   [menu, setMenu] = useState(false),
+   [liked, setLiked] = useState<string[]>([]),
+   [cartOpen, setCartOpen] = useState(false),
+   [checkout, setCheckout] = useState(false),
+   [busy, setBusy] = useState(false),
+   [notice, setNotice] = useState(""),
+   [admin] = useState(window.location.pathname === "/admin"),
+   [account] = useState(window.location.pathname === "/account"),
+   [customerToken, setCustomerToken] = useState(
+     localStorage.getItem("t5-customer-token") ?? "",
+   ),
+   [customerMode, setCustomerMode] = useState<"login" | "register">("login"),
+   [customerForm, setCustomerForm] = useState({
+     email: "",
+     password: "",
+     firstName: "",
+     lastName: "",
+     phone: "",
+   }),
+   [adminToken, setAdminToken] = useState(token()),
+   [adminEmail, setAdminEmail] = useState(""),
+   [adminPassword, setAdminPassword] = useState(""),
+   [adminData, setAdminData] = useState<any>(null),
+   [orders, setOrders] = useState<any[]>([]),
+   [adminProducts, setAdminProducts] = useState<any[]>([]),
+   [adminCategories, setAdminCategories] = useState<any[]>([]),
+   [productDraft, setProductDraft] = useState({
+     name: "",
+     slug: "",
+     description: "",
+     categoryId: "",
+     priceNaira: "",
+     stock: "",
+     imageUrl: "",
+   });
  const [form,setForm]=useState({email:'',phone:'',firstName:'',lastName:'',state:'Lagos',area:'',city:'',street:'',landmark:''});
  useEffect(()=>{api('/catalog/products').then(setProducts).catch(()=>setNotice('Showing demonstration products. Connect the API and seed the database to load the live catalogue.'));},[]);
  useEffect(()=>{if(admin&&adminToken){api('/admin/dashboard',{headers:{Authorization:'Bearer '+adminToken}}).then(setAdminData).catch(()=>{setAdminToken('');localStorage.removeItem('t5-admin-token');});api('/admin/orders',{headers:{Authorization:'Bearer '+adminToken}}).then(setOrders).catch(()=>{});api('/admin/products',{headers:{Authorization:'Bearer '+adminToken}}).then(setAdminProducts).catch(()=>{});api('/catalog/categories').then(setAdminCategories).catch(()=>{});}},[admin,adminToken]);
