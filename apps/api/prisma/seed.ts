@@ -1,1 +1,202 @@
-import 'dotenv/config';import {PrismaPg} from '@prisma/adapter-pg';import {PrismaClient} from '../src/generated/prisma/client.js';import {hash} from 'bcryptjs';const url=process.env.DATABASE_URL;if(!url)throw new Error('DATABASE_URL required');const prisma=new PrismaClient({adapter:new PrismaPg({connectionString:url})});const categories:[string,string][]=[['Shoes','shoes'],['Bags','bags'],['Belts','belts'],['Sandals','sandals'],['Slippers','slippers'],['Clothing','clothing'],['Fragrance','fragrance'],['Accessories','accessories']];const products:[string,string,string,number,number,string][]=[['Executive Leather Loafer','executive-leather-loafer','Shoes',6850000,12,'photo-1614252369475-531eba835eb1'],['Signature Crossbody Bag','signature-crossbody-bag','Bags',5400000,9,'photo-1548036328-c9fa89d128fa'],['Heritage Leather Belt','heritage-leather-belt','Belts',2450000,18,'photo-1624222247344-550fb8e9a6b2'],['Minimalist Leather Sandal','minimalist-leather-sandal','Sandals',3200000,14,'photo-1603487742131-4160ec999306'],['After Hours Eau de Parfum','after-hours-eau-de-parfum','Fragrance',3850000,8,'photo-1541643600914-78b084683601'],['Relaxed Premium Hoodie','relaxed-premium-hoodie','Clothing',4200000,20,'photo-1556821840-3a63f95609a7'],['City Runner Sneaker','city-runner-sneaker','Shoes',5900000,11,'photo-1542291026-7eec264c27ff'],['Weekend Essential Tote','weekend-essential-tote','Bags',4750000,10,'photo-1584917865442-de89df76afd3'],['Classic Leather Slides','classic-leather-slides','Slippers',2150000,15,'photo-1543163521-1bf539c55dd2'],['Premium Cotton Polo','premium-cotton-polo','Clothing',2850000,25,'photo-1625910513413-5fc6c3b8a5a5'],['Leather Biker Jacket','leather-biker-jacket','Clothing',12500000,5,'photo-1520975958225-5b6c4c5c0a3d'],['Urban Combat Shorts','urban-combat-shorts','Clothing',1950000,22,'photo-1591195853828-11db59a44f6b']];async function main(){for(let i=0;i<categories.length;i++){const[name,slug]=categories[i];await prisma.category.upsert({where:{slug},update:{name,sortOrder:i},create:{name,slug,sortOrder:i,description:'Explore our '+name.toLowerCase()+' collection.'}});}for(const[name,slug,cat,price,stock,image]of products){const category=await prisma.category.findUniqueOrThrow({where:{slug:cat.toLowerCase()}});await prisma.product.upsert({where:{slug},update:{},create:{name,slug,description:'A considered Titanium 5 demonstration piece. Sample listing for testing; confirm actual specifications and availability before launch.',categoryId:category.id,status:'ACTIVE',isDemo:true,isFeatured:slug==='executive-leather-loafer'||slug==='signature-crossbody-bag',images:{create:{url:'https://images.unsplash.com/'+image+'?auto=format&fit=crop&w=900&q=85',altText:name}},variants:{create:{sku:'T5-DEMO-'+slug.toUpperCase(),name:'Standard',priceKobo:price,stockOnHand:stock}}}});}for(const z of [{state:'Lagos',area:'',feeKobo:150000},{state:'Lagos',area:'Lekki',feeKobo:200000},{state:'Lagos',area:'Ikeja',feeKobo:150000},{state:'FCT',area:'',feeKobo:350000},{state:'Rivers',area:'',feeKobo:350000},{state:'Oyo',area:'',feeKobo:300000}])await prisma.deliveryZone.upsert({where:{state_area:{state:z.state,area:z.area}},update:{feeKobo:z.feeKobo},create:z});const email=process.env.ADMIN_EMAIL??'admin@titanium5.test';const password=process.env.ADMIN_PASSWORD;if(password)await prisma.adminUser.upsert({where:{email},update:{},create:{email,name:'Titanium Store Admin',passwordHash:await hash(password,12)}});else console.warn('ADMIN_PASSWORD missing; admin user not seeded');console.log('Seeded demo catalogue, delivery zones and admin account if configured.');}main().finally(()=>prisma.$disconnect());
+import { fileURLToPath } from "node:url";
+
+process.loadEnvFile(fileURLToPath(new URL("../.env", import.meta.url)));
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../src/generated/prisma/client.js";
+import { hash } from "bcryptjs";
+const url = process.env.DATABASE_URL;
+if (!url) throw new Error("DATABASE_URL required");
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: url }),
+});
+const categories: [string, string][] = [
+  ["Shoes", "shoes"],
+  ["Bags", "bags"],
+  ["Belts", "belts"],
+  ["Sandals", "sandals"],
+  ["Slippers", "slippers"],
+  ["Clothing", "clothing"],
+  ["Fragrance", "fragrance"],
+  ["Accessories", "accessories"],
+];
+const products: [string, string, string, number, number, string][] = [
+  [
+    "Executive Leather Loafer",
+    "executive-leather-loafer",
+    "Shoes",
+    6850000,
+    12,
+    "photo-1614252369475-531eba835eb1",
+  ],
+  [
+    "Signature Crossbody Bag",
+    "signature-crossbody-bag",
+    "Bags",
+    5400000,
+    9,
+    "photo-1548036328-c9fa89d128fa",
+  ],
+  [
+    "Heritage Leather Belt",
+    "heritage-leather-belt",
+    "Belts",
+    2450000,
+    18,
+    "photo-1624222247344-550fb8e9a6b2",
+  ],
+  [
+    "Minimalist Leather Sandal",
+    "minimalist-leather-sandal",
+    "Sandals",
+    3200000,
+    14,
+    "photo-1603487742131-4160ec999306",
+  ],
+  [
+    "After Hours Eau de Parfum",
+    "after-hours-eau-de-parfum",
+    "Fragrance",
+    3850000,
+    8,
+    "photo-1541643600914-78b084683601",
+  ],
+  [
+    "Relaxed Premium Hoodie",
+    "relaxed-premium-hoodie",
+    "Clothing",
+    4200000,
+    20,
+    "photo-1556821840-3a63f95609a7",
+  ],
+  [
+    "City Runner Sneaker",
+    "city-runner-sneaker",
+    "Shoes",
+    5900000,
+    11,
+    "photo-1542291026-7eec264c27ff",
+  ],
+  [
+    "Weekend Essential Tote",
+    "weekend-essential-tote",
+    "Bags",
+    4750000,
+    10,
+    "photo-1584917865442-de89df76afd3",
+  ],
+  [
+    "Classic Leather Slides",
+    "classic-leather-slides",
+    "Slippers",
+    2150000,
+    15,
+    "photo-1543163521-1bf539c55dd2",
+  ],
+  [
+    "Premium Cotton Polo",
+    "premium-cotton-polo",
+    "Clothing",
+    2850000,
+    25,
+    "photo-1625910513413-5fc6c3b8a5a5",
+  ],
+  [
+    "Leather Biker Jacket",
+    "leather-biker-jacket",
+    "Clothing",
+    12500000,
+    5,
+    "photo-1520975958225-5b6c4c5c0a3d",
+  ],
+  [
+    "Urban Combat Shorts",
+    "urban-combat-shorts",
+    "Clothing",
+    1950000,
+    22,
+    "photo-1591195853828-11db59a44f6b",
+  ],
+];
+async function main() {
+  for (let i = 0; i < categories.length; i++) {
+    const [name, slug] = categories[i];
+    await prisma.category.upsert({
+      where: { slug },
+      update: { name, sortOrder: i },
+      create: {
+        name,
+        slug,
+        sortOrder: i,
+        description: "Explore our " + name.toLowerCase() + " collection.",
+      },
+    });
+  }
+  for (const [name, slug, cat, price, stock, image] of products) {
+    const category = await prisma.category.findUniqueOrThrow({
+      where: { slug: cat.toLowerCase() },
+    });
+    await prisma.product.upsert({
+      where: { slug },
+      update: {},
+      create: {
+        name,
+        slug,
+        description:
+          "A considered Titanium 5 demonstration piece. Sample listing for testing; confirm actual specifications and availability before launch.",
+        categoryId: category.id,
+        status: "ACTIVE",
+        isDemo: true,
+        isFeatured:
+          slug === "executive-leather-loafer" ||
+          slug === "signature-crossbody-bag",
+        images: {
+          create: {
+            url:
+              "https://images.unsplash.com/" +
+              image +
+              "?auto=format&fit=crop&w=900&q=85",
+            altText: name,
+          },
+        },
+        variants: {
+          create: {
+            sku: "T5-DEMO-" + slug.toUpperCase(),
+            name: "Standard",
+            priceKobo: price,
+            stockOnHand: stock,
+          },
+        },
+      },
+    });
+  }
+  for (const z of [
+    { state: "Lagos", area: "", feeKobo: 150000 },
+    { state: "Lagos", area: "Lekki", feeKobo: 200000 },
+    { state: "Lagos", area: "Ikeja", feeKobo: 150000 },
+    { state: "FCT", area: "", feeKobo: 350000 },
+    { state: "Rivers", area: "", feeKobo: 350000 },
+    { state: "Oyo", area: "", feeKobo: 300000 },
+  ])
+    await prisma.deliveryZone.upsert({
+      where: { state_area: { state: z.state, area: z.area } },
+      update: { feeKobo: z.feeKobo },
+      create: z,
+    });
+  const email = process.env.ADMIN_EMAIL ?? "admin@titanium5.test";
+  const password = process.env.ADMIN_PASSWORD;
+  if (password)
+    await prisma.adminUser.upsert({
+      where: { email },
+      update: {},
+      create: {
+        email,
+        name: "Titanium Store Admin",
+        passwordHash: await hash(password, 12),
+      },
+    });
+  else console.warn("ADMIN_PASSWORD missing; admin user not seeded");
+  console.log(
+    "Seeded demo catalogue, delivery zones and admin account if configured.",
+  );
+}
+main().finally(() => prisma.$disconnect());
