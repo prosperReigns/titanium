@@ -1,6 +1,12 @@
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-process.loadEnvFile(fileURLToPath(new URL("../.env", import.meta.url)));
+const envPath = fileURLToPath(new URL("../.env", import.meta.url));
+
+if (existsSync(envPath)) {
+  process.loadEnvFile(envPath);
+}
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { hash } from "bcryptjs";

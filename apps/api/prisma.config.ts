@@ -1,12 +1,17 @@
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "prisma/config";
 
 const envPath = fileURLToPath(new URL("./.env", import.meta.url));
 
-process.loadEnvFile(envPath);
+// Load local environment variables only when the file exists.
+// Render provides environment variables directly.
+if (existsSync(envPath)) {
+  process.loadEnvFile(envPath);
+}
 
 if (!process.env.DATABASE_URL) {
-  throw new Error(`DATABASE_URL was not loaded from ${envPath}`);
+  throw new Error("DATABASE_URL environment variable is required");
 }
 
 export default defineConfig({
