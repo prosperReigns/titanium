@@ -46,6 +46,9 @@ render.yaml               Render Blueprint
 6. Start the API and storefront together: `pnpm dev`.
 
 Local storefront: http://localhost:5173  
+Product pages: http://localhost:5173/product.html?slug=product-slug  
+Customer account: http://localhost:5173/account.html  
+Checkout: http://localhost:5173/checkout.html  
 Local API: http://localhost:3001/api  
 Health check: http://localhost:3000/api/health  
 Admin: http://localhost:5173/admin
