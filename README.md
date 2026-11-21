@@ -46,7 +46,7 @@ render.yaml               Render Blueprint
 6. Start the API and storefront together: `pnpm dev`.
 
 Local storefront: http://localhost:5173  
-Local API: http://localhost:3000/api  
+Local API: http://localhost:3001/api  
 Health check: http://localhost:3000/api/health  
 Admin: http://localhost:5173/admin
 
@@ -89,7 +89,7 @@ If you choose to create Render services manually, use Node 24, repository root a
 - Prices are integer kobo. Replace the demonstration products, images, prices, stock and delivery fees before launch.
 - Checkout requires a configured Paystack test secret and a delivery zone matching the supplied state/area.
 - Paystack webhooks require a public URL; use your Render test deployment for webhook end-to-end tests.
-- Customer account registration/login endpoints are available. Checkout currently supports guest checkout.
+- Customer account registration/login endpoints are available. Checkout requires an authenticated customer account; the API verifies the customer JWT and attaches the customer ID to each order.
 - Configure support email/phone, return/refund policy, privacy policy, delivery SLA and real product variants before production.
 
 ## Quality and security checklist
