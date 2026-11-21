@@ -193,7 +193,7 @@ async function main() {
   if (password)
     await prisma.adminUser.upsert({
       where: { email },
-      update: {},
+      update: { passwordHash: await hash(password, 12) },
       create: {
         email,
         name: "Titanium Store Admin",
