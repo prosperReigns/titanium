@@ -51,7 +51,7 @@ export default function App(){
      colors: "",
      sizes: "",
    });
- const [form,setForm]=useState({email:'',phone:'',firstName:'',lastName:'',state:'Lagos',area:'',city:'',street:'',landmark:''});
+ const [form,setForm]=useState(()=>{const defaults={email:'',phone:'',firstName:'',lastName:'',state:'Lagos',area:'',city:'',street:'',landmark:''};try{const saved=sessionStorage.getItem('t5-checkout-form');if(saved){sessionStorage.removeItem('t5-checkout-form');return {...defaults,...JSON.parse(saved)};}}catch{}return defaults;});
  const [showPassword,setShowPassword]=useState(false),[showAdminPassword,setShowAdminPassword]=useState(false);
  const [imageUploading,setImageUploading]=useState(false),[imagePreview,setImagePreview]=useState('');
  const [detail,setDetail]=useState<Product|null>(null),[detailBusy,setDetailBusy]=useState(false),[selectedVariantId,setSelectedVariantId]=useState(''),[detailQuantity,setDetailQuantity]=useState(1);
@@ -66,7 +66,7 @@ export default function App(){
  const total=cart.reduce((sum,line)=>sum+line.variant.priceKobo*line.quantity,0),count=cart.reduce((sum,line)=>sum+line.quantity,0);
  function add(p:Product,v:Variant=p.variants[0],qty=1){if(!v){setNotice('This product is currently unavailable.');return;}const current=cart;const found=current.find(x=>x.variant.id===v.id);const next=found?current.map(x=>x.variant.id===v.id?{...x,quantity:Math.min(10,x.quantity+qty)}:x):[...current,{product:p,variant:v,quantity:qty}];localStorage.setItem('t5-cart',JSON.stringify(next));setCart(next);if(productPage){window.location.href='/?cart=1';return;}setCartOpen(true);}
  function change(id:string,delta:number){setCart(old=>old.map(x=>x.variant.id===id?{...x,quantity:x.quantity+delta}:x).filter(x=>x.quantity>0));}
- async function pay(e:React.FormEvent){e.preventDefault();const customerToken=localStorage.getItem('t5-customer-token');if(!customerToken){window.location.href='/account.html?redirect=checkout';return;}setBusy(true);setNotice('');try{const result=await api('/orders/checkout',{method:'POST',headers:{Authorization:'Bearer '+customerToken},body:JSON.stringify({...form,items:cart.map(x=>({variantId:x.variant.id,quantity:x.quantity})),address:{state:form.state,area:form.area||undefined,city:form.city,street:form.street,landmark:form.landmark||undefined}})});if(!result.authorizationUrl)throw new Error('Payment session was not created');window.location.href=result.authorizationUrl;}catch(err){setNotice(err instanceof Error?err.message:'Checkout failed');setBusy(false);}}
+ async function pay(e:React.FormEvent){e.preventDefault();const customerToken=localStorage.getItem('t5-customer-token');if(!customerToken){window.location.href='/account.html?redirect=checkout';return;}setBusy(true);setNotice('');try{const result=await api('/orders/checkout',{method:'POST',headers:{Authorization:'Bearer '+customerToken},body:JSON.stringify({...form,items:cart.map(x=>({variantId:x.variant.id,quantity:x.quantity})),address:{state:form.state,area:form.area||undefined,city:form.city,street:form.street,landmark:form.landmark||undefined}})});if(!result.authorizationUrl)throw new Error('Payment session was not created');window.location.href=result.authorizationUrl;}catch(err){const message=err instanceof Error?err.message:'Checkout failed';if(/session expired|unauthorized/i.test(message)){sessionStorage.setItem('t5-checkout-form',JSON.stringify(form));localStorage.removeItem('t5-customer-token');setCustomerToken('');window.location.href='/account.html?redirect=checkout&reason=session-expired';return;}setNotice(message);setBusy(false);}}
  async function uploadProductImage(file:File){
   if(!file.type.startsWith('image/')){setNotice('Choose an image file (JPG, PNG, WebP or GIF).');return;}
   if(file.size>10*1024*1024){setNotice('Image must be 10 MB or smaller.');return;}
@@ -75,7 +75,12 @@ export default function App(){
    const signature=await api('/media/signature',{headers:{Authorization:'Bearer '+adminToken}});
    const payload=new FormData();
    payload.append('file',file);payload.append('api_key',signature.apiKey);payload.append('timestamp',String(signature.timestamp));payload.append('signature',signature.signature);payload.append('folder',signature.folder);
-   const response=await fetch('https://api.cloudinary.com/v1_1/'+encodeURIComponent(signature.cloudName)+'/image/upload',{method:'POST',body:payload});
+   let response:Response|undefined;
+   for(let attempt=0;attempt<3;attempt++){
+    try{response=await fetch('https://api.cloudinary.com/v1_1/'+encodeURIComponent(signature.cloudName)+'/image/upload',{method:'POST',body:payload});break;}
+    catch(error){if(attempt===2)throw new Error('The network connection changed during upload. Check your connection and try again.');await new Promise(resolve=>window.setTimeout(resolve,600*(attempt+1)));}
+   }
+   if(!response)throw new Error('Image upload could not be completed. Please try again.');
    const uploaded=await response.json();
    if(!response.ok||!uploaded.secure_url)throw new Error(uploaded.error?.message||'Image upload failed. Check Cloudinary configuration.');
    setProductDraft(old=>({...old,imageUrl:uploaded.secure_url}));setImagePreview(uploaded.secure_url);setNotice('Product image uploaded successfully.');
