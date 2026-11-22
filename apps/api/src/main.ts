@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { ValidationPipe } from "@nestjs/common";
+import { RequestMethod, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import helmet from "helmet";
@@ -10,7 +10,19 @@ async function bootstrap() {
   const origins = (config.get<string>("WEB_ORIGIN") ?? "http://localhost:5173")
     .split(",")
     .map((x) => x.trim());
-  app.setGlobalPrefix("api");
+  app.setGlobalPrefix("api", {
+    exclude: [
+      { path: "admin", method: RequestMethod.GET },
+      { path: "account.html", method: RequestMethod.GET },
+      { path: "checkout.html", method: RequestMethod.GET },
+      { path: "product.html", method: RequestMethod.GET },
+
+      // Keep compatibility with the other frontend paths.
+      { path: "account", method: RequestMethod.GET },
+      { path: "checkout", method: RequestMethod.GET },
+      { path: "product/:slug", method: RequestMethod.GET },
+    ],
+  });
   app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
   app.enableCors({ origin: origins, credentials: true });
   app.useGlobalPipes(

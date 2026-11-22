@@ -1,1 +1,44 @@
-import {Module} from '@nestjs/common';import {APP_GUARD} from '@nestjs/core';import {ThrottlerGuard,ThrottlerModule} from '@nestjs/throttler';import {ConfigModule} from '@nestjs/config';import {ScheduleModule} from '@nestjs/schedule';import {ServeStaticModule} from '@nestjs/serve-static';import {dirname,resolve} from 'node:path';import {fileURLToPath} from 'node:url';import {AdminModule} from './admin/admin.module.js';import {AuthModule} from './auth/auth.module.js';import {CatalogModule} from './catalog/catalog.module.js';import {HealthModule} from './health/health.module.js';import {MediaModule} from './media/media.module.js';import {OrdersModule} from './orders/orders.module.js';import {PaymentsModule} from './payments/payments.module.js';import {PrismaModule} from './prisma/prisma.module.js';const here=dirname(fileURLToPath(import.meta.url));@Module({imports:[ConfigModule.forRoot({isGlobal:true,envFilePath:['apps/api/.env','.env']}),ScheduleModule.forRoot(),ThrottlerModule.forRoot([{ttl:60000,limit:120}]),ServeStaticModule.forRoot({rootPath:resolve(here,'../../web/dist'),serveRoot:'/',exclude:['/api/(.*)']}),PrismaModule,HealthModule,AuthModule,CatalogModule,OrdersModule,PaymentsModule,AdminModule,MediaModule],providers:[{provide:APP_GUARD,useClass:ThrottlerGuard}]})export class AppModule{}
+import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { ConfigModule } from "@nestjs/config";
+import { ScheduleModule } from "@nestjs/schedule";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { AdminModule } from "./admin/admin.module.js";
+import { AuthModule } from "./auth/auth.module.js";
+import { CatalogModule } from "./catalog/catalog.module.js";
+import { HealthModule } from "./health/health.module.js";
+import { MediaModule } from "./media/media.module.js";
+import { OrdersModule } from "./orders/orders.module.js";
+import { PaymentsModule } from "./payments/payments.module.js";
+import { PrismaModule } from "./prisma/prisma.module.js";
+import { SpaController } from "./spa.controller.js";
+const here = dirname(fileURLToPath(import.meta.url));
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ["apps/api/.env", ".env"],
+    }),
+    ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }]),
+    ServeStaticModule.forRoot({
+      rootPath: resolve(here, "../../web/dist"),
+      serveRoot: "/",
+      exclude: ["/api/(.*)"],
+    }),
+    PrismaModule,
+    HealthModule,
+    AuthModule,
+    CatalogModule,
+    OrdersModule,
+    PaymentsModule,
+    AdminModule,
+    MediaModule,
+  ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  controllers: [SpaController],
+})
+export class AppModule {}
